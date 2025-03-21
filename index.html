@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Client</title>
+    <style>
+        .my-message {
+            color: blue; /* Mensagens do cliente atual */
+        }
+        .other-message {
+            color: green; /* Mensagens de outros clientes */
+        }
+    </style>
+</head>
+<body>
+<h1>WebSocket Client</h1>
+<div id="messages"></div>
+<input id="chatbox" placeholder="Digite sua mensagem aqui">
+<script>
+    const socket = new WebSocket('ws://localhost:5255');
+
+    const clientId = crypto.randomUUID();
+    const userName = prompt("Digite seu nome de usuário: ");
+    
+    socket.onmessage = function (event) {
+        const messages = document.getElementById("messages");
+        
+        const data = JSON.parse(event.data);
+        
+        // Verifica se o clientId é do cliente atual
+        const messageClass = data.clientId === clientId ? "my-message" : "other-message";
+        
+        // Adiciona a mensagem com a classe correspondente
+        messages.innerHTML += `<p class="${messageClass}"><strong>${data.sender}:</strong> ${data.content} <em>(${data.timestamp})</em></p>`;
+    };
+
+    document.getElementById("chatbox").addEventListener("keyup", function(event) {
+        if (event.key === "Enter") {
+            const jsonMessage = {
+                content: event.target.value,
+                timestamp: new Date().toISOString(),
+                clientId: clientId,
+                sender: userName
+            };
+            socket.send(JSON.stringify(jsonMessage));
+            event.target.value = "";
+        }
+    });
+</script>
+</body>
+</html>
