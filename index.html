@@ -82,13 +82,46 @@
     <div id="messages"></div>
     <input id="chatbox" placeholder="Digite sua mensagem aqui">
 </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js" integrity="sha512-7SRCYIJtR6F8ocwW7UxW6wGKqbSyqREDbfCORCbGLatU0iugBLwyOXpzhkPyHIFdBO0K2VCu57fvP2Twgx1o2A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script>
-    const socket = new WebSocket('ws://localhost:5255');
+    "use strict";
+    //const socket = new WebSocket('ws://localhost:5255');
+
+    var connection = new signalR.HubConnectionBuilder().withUrl("http://localhost:5255/chathub").build();
+    connection.start({ withCredentials: false });
 
     const clientId = crypto.randomUUID();
     const userName = prompt("Digite seu nome de usuário: ");
     
-    socket.onmessage = function (event) {
+    connection.on("ReceiveMessage", function (user, message, clientIdMessage, timestamp) {
+        const messages = document.getElementById("messages");
+        
+        
+        // Verifica se o clientId é do cliente atual
+        const messageClass = clientId === clientIdMessage ? "my-message" : "other-message";
+        
+        // Adiciona a mensagem com a classe correspondente
+        const messageElement = document.createElement("p");
+        messageElement.className = messageClass;
+        messageElement.innerHTML = `<strong>${user}:</strong> ${message} <em>(${timestamp})</em>`;
+        messages.appendChild(messageElement);
+        messages.scrollTop = messages.scrollHeight; // Rola para a última mensagem
+    });
+
+
+    document.getElementById("chatbox").addEventListener("keyup", function(event) {
+        if (event.key === "Enter") {
+
+            connection.invoke("SendMessage", userName, event.target.value, clientId, new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }))
+                .catch(function (err) {
+                    return console.error(err.toString());
+                });
+
+            event.target.value = "";
+        }
+    });
+
+    /* socket.onmessage = function (event) {
         const messages = document.getElementById("messages");
         
         const data = JSON.parse(event.data);
@@ -102,9 +135,9 @@
         messageElement.innerHTML = `<strong>${data.sender}:</strong> ${data.content} <em>(${data.timestamp})</em>`;
         messages.appendChild(messageElement);
         messages.scrollTop = messages.scrollHeight; // Rola para a última mensagem
-    };
+    }; */
 
-    document.getElementById("chatbox").addEventListener("keyup", function(event) {
+    /* document.getElementById("chatbox").addEventListener("keyup", function(event) {
         if (event.key === "Enter") {
             const jsonMessage = {
                 content: event.target.value,
@@ -115,7 +148,7 @@
             socket.send(JSON.stringify(jsonMessage));
             event.target.value = "";
         }
-    });
+    }); */
 </script>
 </body>
 </html>
