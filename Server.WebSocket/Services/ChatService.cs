@@ -1,4 +1,7 @@
-﻿using System.Net.WebSockets;
+using System.Net.WebSockets;
+using System.Text;
+using Newtonsoft.Json;
+using WS.Server.Viewmodels;
 
 namespace WS.Server.Services
 {
@@ -21,8 +24,16 @@ namespace WS.Server.Services
                     await socket.CloseAsync(result.CloseStatus.GetValueOrDefault(),
                         result.CloseStatusDescription,
                         CancellationToken.None);
+
+                    Console.WriteLine("Connection Closed");
                     break;
                 }
+
+                var json = Encoding.UTF8.GetString(buffer).Trim('\0');
+
+                var message = JsonConvert.DeserializeObject<MessageContent>(json);
+                Console.WriteLine($"Message Received from {message.Sender} at {message.Timestamp} from {message.ClientId}");
+
 
                 foreach (var s in _sockets)
                     await s.SendAsync(buffer[..result.Count], WebSocketMessageType.Text, true, default);
