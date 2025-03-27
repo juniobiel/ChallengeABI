@@ -10,11 +10,11 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin", policy =>
     {
-        policy.WithOrigins("http://localhost:8000") // Substitua pela URL do cliente
+        policy.WithOrigins("http://localhost:8000")
               .AllowAnyHeader()
               .AllowAnyMethod()
-              .SetIsOriginAllowed((host) => true) // Adicional: Permite subdomínios ou origens dinâmicas
-              .AllowCredentials(); // Apenas quando necessário
+              .SetIsOriginAllowed((host) => true)
+              .AllowCredentials();
     });
 
 });
