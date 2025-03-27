@@ -5,20 +5,7 @@ using Server.WebSocket.Hubs;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddInjections();
-
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowSpecificOrigin", policy =>
-    {
-        policy.WithOrigins("http://localhost:8000")
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .SetIsOriginAllowed((host) => true)
-              .AllowCredentials();
-    });
-
-});
-
+builder.Services.AddCorsPolicies();
 builder.Services.AddSignalR();
 
 WebApplication app = builder.Build();
